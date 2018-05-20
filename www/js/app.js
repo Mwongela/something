@@ -8,10 +8,17 @@ var numberWithCommas = function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+var currentMonth = function () {
+    var mL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var date = new Date();
+    return mL[date.getMonth()];
+};
+
 var app = {
 
     goalType: "not defined",
     groupType: "not defined",
+    selectedMonth: "",
 
     dataStore: [],
     populateDs: function populateDs(item) {
@@ -92,7 +99,9 @@ var app = {
     onDeviceReady: function onDeviceReady() {
 
         if (app.surveyId === null) {
-            setTimeout(function() { $.mobile.changePage('login.html'); }, 100);
+            setTimeout(function () {
+                $.mobile.changePage('login.html');
+            }, 100);
         }
 
         // $(document).on('pageinit', 'div:jqmData(role="page")', function (event) {
@@ -108,7 +117,7 @@ var app = {
             var anchor = target.closest('a');
             var goalType = anchor.attr('data-goal-type');
             if (!goalType) return;
-            var params = { goalType: goalType };
+            var params = {goalType: goalType};
             app.goalType = goalType;
             if (goalType) {
                 $.mobile.changePage('goal_type_desc.html');
@@ -118,7 +127,8 @@ var app = {
         $(document).on('pagebeforeshow', '#goal-type-desc', function (e) {
             var goalType = app.goalType;
             if (!goalType) {
-                $.mobile.back();return;
+                $.mobile.back();
+                return;
             }
 
             var img = 'img/default-image.jpg';
@@ -134,6 +144,7 @@ var app = {
             $("#goal-img").attr('src', img);
             $("#goal-title").html(goalType.capitalize());
             $("#goal-type").html(goalType.capitalize());
+            $("#month").html(app.selectedMonth);
         });
 
         $(document).on('pagebeforeshow', '#goal_amount_selection', function (e) {
@@ -195,11 +206,17 @@ var app = {
                 amount = 2000;
             }
             $("#gs-img").attr('src', img);
-            $("#gs-goal").html(goalType.capitalize());
-            $("#gs-group").html(group.capitalize());
+            $(".gs-goal").html(goalType.capitalize());
+            $(".gs-group").html(group.capitalize());
         });
 
-        $(document).on('click', '#login-button', function(e) {
+        $(document).on('change', 'input[name=month]', function(e) {
+
+            var input = $(e.target);
+            app.selectedMonth = input.val();
+        });
+
+        $(document).on('click', '#login-button', function (e) {
             e.preventDefault();
             var phoneNumber = $("#phone_number").val();
             if (!phoneNumber || !/\d+/.test(phoneNumber)) {
@@ -270,10 +287,16 @@ var app = {
                 var inputStream = "";
 
                 inputTxt.change(function (e) {
+
                     var name = inputTxt.attr("name");
                     var type = inputTxt.attr('type');
+
                     finalInputValue = type === 'radio' ? $(`input[name=${name}]:checked`).val() : inputTxt.val();
-                    finalInputLength = inputTxt.val().length;
+
+                    console.log("Final input value", finalInputValue, type, $(`input[name=${name}]:checked`).val());
+                    if (!finalInputValue) return;
+
+                    finalInputLength = finalInputValue.length;
                     timeStopTyping = app.getTimeStamp();
                     timeSpentInField = moment.duration(moment(timeStopTyping).diff(moment(timeStartTyping)))._milliseconds;
                     intelliWordChanges.shift();
@@ -312,6 +335,23 @@ var app = {
                 }).focus(function (e) {
                     // console.log(e.timeStamp);
                 });
+
+                var radioButtons = $(data.page).find("input").toArray().filter(function (input) {
+                    return $(input).attr('type') === 'radio';
+                });
+
+                if (radioButtons.length > 0) {
+                    var mth = currentMonth();
+                    radioButtons.forEach(function (button) {
+                        var b = $(button);
+                        b.attr('disabled', true);
+                        if (b.val() === mth) {
+                            b.prop('checked', true);
+                            setTimeout(function() { b.change() }, 50);
+                        }
+                    });
+                }
+
             } else {
                 app.populateDs(pageAnalytics);
             }

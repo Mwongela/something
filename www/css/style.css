@@ -209,7 +209,7 @@ img {
     font-size: 14px !important;
 }
 
-#goal_amount_selection {
+#goal_amount_selection, #exit-page {
     background-color: #dff4f3;
 }
 
@@ -247,4 +247,8 @@ img {
     margin: -22px .3125em 0 !important;
     border: 0;
     background-color: transparent;
+}
+
+.ui-disabled, .ui-state-disabled, button[disabled], .ui-select .ui-btn.ui-state-disabled {
+    opacity: 1 !important;
 }
