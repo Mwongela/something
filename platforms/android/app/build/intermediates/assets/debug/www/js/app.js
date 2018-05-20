@@ -1,20 +1,20 @@
-String.prototype.capitalize = function() {
+"use strict";
+
+String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
-const numberWithCommas = (x) => {
+var numberWithCommas = function numberWithCommas(x) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
-
-
-let app = {
+var app = {
 
     goalType: "not defined",
     groupType: "not defined",
 
     dataStore: [],
-    populateDs: function(item) {
+    populateDs: function populateDs(item) {
         this.dataStore.push(item);
     },
     surveyId: null,
@@ -22,116 +22,106 @@ let app = {
     currentPageTimestamp: null,
     pageOrder: 1,
     prevPage: "index",
-    timeTracker: function(curTimeStamp) {
-        let floorTimeStamp = this.currentPageTimestamp;
+    timeTracker: function timeTracker(curTimeStamp) {
+        var floorTimeStamp = this.currentPageTimestamp;
         this.currentPageTimestamp = curTimeStamp;
         return moment.duration(moment(curTimeStamp).diff(moment(floorTimeStamp)))._milliseconds;
     },
-    textAnalyticsEngine: function(inputTxt) {
-        let backspaceCount = 0;
-        let totalKeyPressCount = 0;
-        let timeStartTyping = 0;
-        let timeStopTyping = 0;
-        let timeSpentInField = 0;
-        let finalInputValue;
-        let finalInputLength;
-        let intelliWordChanges = [""];
-        let intelliWordIndex = 0;
-        let inputStream = "";
+    textAnalyticsEngine: function textAnalyticsEngine(inputTxt) {
+        var backspaceCount = 0;
+        var totalKeyPressCount = 0;
+        var timeStartTyping = 0;
+        var timeStopTyping = 0;
+        var timeSpentInField = 0;
+        var finalInputValue = void 0;
+        var finalInputLength = void 0;
+        var intelliWordChanges = [""];
+        var intelliWordIndex = 0;
+        var inputStream = "";
 
-        inputTxt.change(function(e) {
+        inputTxt.change(function (e) {
             finalInputValue = inputTxt.val();
             finalInputLength = inputTxt.val().length;
-            timeStopTyping = e.timeStamp;
+            timeStopTyping = Date.now();
             timeSpentInField = moment.duration(moment(timeStopTyping).diff(moment(timeStartTyping)));
             intelliWordChanges.shift();
-            console.log(intelliWordChanges);
-        }).keypress(function(e) {
+        }).keypress(function (e) {
             totalKeyPressCount++;
-            if (e.keyCode != 8) {
+            if (e.keyCode !== 8) {
                 inputStream += e.key;
             }
 
-            if (e.keyCode == 8) {
+            if (e.keyCode === 8) {
                 backspaceCount++;
-                if (inputTxt.val().length == 1) {
+                if (inputTxt.val().length === 1) {
                     intelliWordIndex++;
                     intelliWordChanges[intelliWordIndex] = inputStream;
                     inputStream = "";
                 }
-
             }
-            if (inputTxt.val().length == 1) {
-                timeStartTyping = e.timeStamp;
+            if (inputTxt.val().length === 1) {
+                timeStartTyping = Date.now();
             }
-
         });
-
-
     },
     util: {
-        getPageTitleFromUrl: function(absUrl) {
-            let pageIdMatch = /\/(\w+)\./;
+        getPageTitleFromUrl: function getPageTitleFromUrl(absUrl) {
+            var pageIdMatch = /\/(\w+)\./;
             return pageIdMatch.exec(absUrl)[1];
         }
 
     },
 
     // Application Constructor
-    initialize: function() {
+    initialize: function initialize() {
         this.bindEvents();
     },
     // Bind Event Listeners
     //
     // Bind any events that are required on startup. Common events are:
     // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
+    bindEvents: function bindEvents() {
         this.onDeviceReady();
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
-
 
     // deviceready Event Handler
     //
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
-    onDeviceReady: function() {
+    onDeviceReady: function onDeviceReady() {
 
-        if (app.surveyId == null) {
-            $.mobile.changePage("survey_id.html", {
-                role: "dialog"
-            });
+        if (app.surveyId === null) {
+            setTimeout(function() { $.mobile.changePage('login.html'); }, 100);
         }
 
-        $(document).on('pageinit', 'div:jqmData(role="page")', function(event){
+        // $(document).on('pageinit', 'div:jqmData(role="page")', function (event) {
+        //
+        //     if (app.surveyId == null) {
+        //         $.mobile.changePage("login.html");
+        //     }
+        // });
 
-            if (app.surveyId == null) {
-                $.mobile.changePage("login.html");
-            }
-        });
+        $(document).on('click', '[data-role="goal_type_selection"]', function (e) {
 
-        $(document).on('pagebeforeshow', '#login', (e) => {
-            app.surveyId = 123;
-        });
-
-        $(document).on('click', '[data-role="goal_type_selection"]', (e) => {
-
-            let target = $(e.target);
-            let anchor = target.closest('a');
-            let goalType = anchor.attr('data-goal-type');
+            var target = $(e.target);
+            var anchor = target.closest('a');
+            var goalType = anchor.attr('data-goal-type');
             if (!goalType) return;
-            let params = {goalType: goalType};
+            var params = { goalType: goalType };
             app.goalType = goalType;
             if (goalType) {
                 $.mobile.changePage('goal_type_desc.html');
             }
         });
 
-        $(document).on('pagebeforeshow', '#goal-type-desc', (e) => {
-            let goalType = app.goalType;
-            if (!goalType) { $.mobile.back(); return }
+        $(document).on('pagebeforeshow', '#goal-type-desc', function (e) {
+            var goalType = app.goalType;
+            if (!goalType) {
+                $.mobile.back();return;
+            }
 
-            let img = 'img/default-image.jpg';
+            var img = 'img/default-image.jpg';
 
             if (goalType === 'entrepreneurship') {
                 img = 'img/icon-bulb.png';
@@ -146,26 +136,26 @@ let app = {
             $("#goal-type").html(goalType.capitalize());
         });
 
-        $(document).on('pagebeforeshow', '#goal_amount_selection', (e) => {
+        $(document).on('pagebeforeshow', '#goal_amount_selection', function (e) {
             $(document).find('.select-amount-goal-type').html(app.goalType.capitalize());
         });
 
-        $(document).on('click', '[data-role=a-group-selection]', (e) => {
-            let element = $(e.target).closest('a');
+        $(document).on('click', '[data-role=a-group-selection]', function (e) {
+            var element = $(e.target).closest('a');
 
-            let group = element.attr('data-group');
+            var group = element.attr('data-group');
             if (!group) return;
             app.groupType = group;
             $.mobile.changePage('goal_amount_selection_complete.html');
         });
 
-        $(document).on('pagebeforeshow', '#goal_amount_selection_complete', (e) => {
+        $(document).on('pagebeforeshow', '#goal_amount_selection_complete', function (e) {
 
-            let goalType = app.goalType;
-            let group = app.groupType;
-            let amount = 0;
+            var goalType = app.goalType;
+            var group = app.groupType;
+            var amount = 0;
 
-            let img = 'img/default-image.jpg';
+            var img = 'img/default-image.jpg';
             if (group === 'savvy') {
                 img = 'img/icon-money-bag-smallest.png';
                 amount = 500;
@@ -182,15 +172,15 @@ let app = {
             $('#img-gasc').attr('src', img);
             $('#goal-gasc').html(goalType.capitalize());
             $('#group-gasc').html(group.capitalize());
-            $("#gasc-amount").html(group === 'champion' ? `more than Naira  ${numberWithCommas(amount)}` : `Naira ${numberWithCommas(amount)}`);
+            $("#gasc-amount").html(group === 'champion' ? "more than Naira  " + numberWithCommas(amount) : "Naira " + numberWithCommas(amount));
         });
 
-        $(document).on('pagebeforeshow', '#group-stats', (e) => {
-            let goalType = app.goalType;
-            let group = app.groupType;
-            let amount = 0;
+        $(document).on('pagebeforeshow', '#group-stats', function (e) {
+            var goalType = app.goalType;
+            var group = app.groupType;
+            var amount = 0;
 
-            let img = 'img/default-image.jpg';
+            var img = 'img/default-image.jpg';
             if (group === 'savvy') {
                 img = 'img/icon-money-bag-smallest.png';
                 amount = 500;
@@ -204,59 +194,90 @@ let app = {
                 img = 'img/icon-money-bag-biggest.png';
                 amount = 2000;
             }
+            $("#gs-img").attr('src', img);
             $("#gs-goal").html(goalType.capitalize());
             $("#gs-group").html(group.capitalize());
+        });
+
+        $(document).on('click', '#login-button', function(e) {
+            e.preventDefault();
+            var phoneNumber = $("#phone_number").val();
+            if (!phoneNumber || !/\d+/.test(phoneNumber)) {
+                window.alert("Invalid Phone Number. Please try again");
+                return;
+            }
+            app.surveyId = phoneNumber;
+            $.mobile.changePage('homepage.html');
+        });
+
+        $(document).on('click', '[data-role=btn-upload-data]', function () {
+            app.save();
         });
 
         app.appStartTimeStamp = app.getTimeStamp();
         app.currentPageTimestamp = app.appStartTimeStamp;
 
-        document.addEventListener("pause", function() {
+        document.addEventListener("pause", function () {
             app.save();
         }, false);
 
-        $(window).on("pagecontainerload", function(event, data) {
+        $(document).on("pagecontainerload", function (event, data) {
 
-            let pageAnalytics = {};
+            var pageAnalytics = {};
 
             pageAnalytics.timeStamp = app.getTimeStamp();
-            pageAnalytics.timeSpent = app.timeTracker(event.timeStamp);
+            pageAnalytics.timeSpent = 0; //app.timeTracker(Date.now());
 
-            let absUrl = data.absUrl;
-            let thePreviousPage = app.prevPage;
-            let currentPage = app.util.getPageTitleFromUrl(absUrl);
+            if (app.dataStore.length > 0) {
+                app.dataStore[app.dataStore.length - 1].timeSpent = app.timeTracker(Date.now());
+
+            }
+
+            var absUrl = data.absUrl;
+            var thePreviousPage = app.prevPage;
+            var currentPage = app.util.getPageTitleFromUrl(absUrl);
+
+            if (currentPage === 'goal_type_desc') currentPage = `${app.goalType}_${currentPage}`;
+            else if (currentPage === 'goal_amount_selection') currentPage = `${app.goalType}_${currentPage}`;
+            else if (currentPage === 'goal_amount_selection_complete') currentPage = `${app.groupType}_${app.goalType}_${currentPage}`;
+            else if (currentPage === 'group_stats') currentPage = `${app.groupType}_${app.goalType}_${currentPage}`;
+
+            console.log("Current Page", currentPage);
+
             pageAnalytics.previousPage = thePreviousPage;
             pageAnalytics.pageName = currentPage;
 
             pageAnalytics.pageOrder = app.pageOrder;
             app.pageOrder++;
             app.prevPage = currentPage;
-            let inputTxt = $(data.page).find("input");
-            let isInputPresent = inputTxt.length ? "yes" : "no";
+            var inputTxt = $(data.page).find("input");
+            var isInputPresent = inputTxt.length ? "yes" : "no";
             pageAnalytics.isInputPresent = isInputPresent;
             pageAnalytics.inputStats = null;
 
-            let inputFieldAnalytics = null;
+            var inputFieldAnalytics = null;
 
             if (inputTxt.length) {
-                let backspaceCount = 0;
-                let totalKeyPressCount = 0
-                let timeStartTyping = 0;
-                let timeStopTyping = 0;
-                let timeSpentInField = 0;
-                let finalInputValue;
-                let finalInputLength;
-                let intelliWordChanges = [""];
-                let intelliWordIndex = 0;
-                let inputStream = ""
+                var backspaceCount = 0;
+                var totalKeyPressCount = 0;
+                var timeStartTyping = 0;
+                var timeStopTyping = 0;
+                var timeSpentInField = 0;
+                var finalInputValue = void 0;
+                var finalInputLength = void 0;
+                var intelliWordChanges = [""];
+                var intelliWordIndex = 0;
+                var inputStream = "";
 
-                inputTxt.change(function(e) {
-                    finalInputValue = inputTxt.val();
+                inputTxt.change(function (e) {
+                    var name = inputTxt.attr("name");
+                    var type = inputTxt.attr('type');
+                    finalInputValue = type === 'radio' ? $(`input[name=${name}]:checked`).val() : inputTxt.val();
                     finalInputLength = inputTxt.val().length;
                     timeStopTyping = app.getTimeStamp();
                     timeSpentInField = moment.duration(moment(timeStopTyping).diff(moment(timeStartTyping)))._milliseconds;
                     intelliWordChanges.shift();
-                    let inputStatistics = {
+                    var inputStatistics = {
                         backspaceCount: backspaceCount,
                         totalKeyPressCount: totalKeyPressCount,
                         timeStartTyping: timeStartTyping,
@@ -265,68 +286,57 @@ let app = {
                         finalInputValue: finalInputValue,
                         finalInputLength: finalInputLength,
                         intelliWordChanges: intelliWordChanges.toString(),
-                        intelliWordIndex: intelliWordIndex
+                        intelliWordIndex: intelliWordIndex,
+                        name: inputTxt.attr("name")
 
-                    }
+                    };
                     pageAnalytics.inputStats = inputStatistics;
                     app.populateDs(pageAnalytics);
-
-
-                }).keyup(function(e) {
+                }).keyup(function (e) {
                     totalKeyPressCount++;
-                    if (e.keyCode != 8 || e.keyCode != 46) {
+                    if (e.keyCode !== 8 || e.keyCode !== 46) {
                         inputStream += e.key;
                     }
 
-                    if (e.keyCode == 8 || e.keyCode == 46) {
+                    if (e.keyCode === 8 || e.keyCode === 46) {
                         backspaceCount++;
-                        if (inputTxt.val().length == 1) {
+                        if (inputTxt.val().length === 1) {
                             intelliWordIndex++;
                             intelliWordChanges[intelliWordIndex] = inputStream;
                             inputStream = "";
                         }
-
                     }
-                    if (inputTxt.val().length == 1) {
+                    if (inputTxt.val().length === 1 && timeStartTyping !== 0) {
                         timeStartTyping = app.getTimeStamp();
                     }
-
-                }).focus(function(e) {
+                }).focus(function (e) {
                     // console.log(e.timeStamp);
                 });
-
             } else {
                 app.populateDs(pageAnalytics);
             }
-
-
-
         });
-        $(document).on("click", "#survey-complete", function() {
+        $(document).on("click", "#survey-complete", function () {
 
             app.save();
-
         });
 
-        $(document).on("click", "#survey-id-submit", function() {
+        $(document).on("click", "#survey-id-submit", function () {
 
-            let x = $("#survey-id").val();
+            var x = $("#survey-id").val();
 
             if (x !== "") {
 
                 app.surveyId = x;
                 $('[data-role=dialog]').dialog("close");
-
             }
-
         });
-
     },
     // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        let parentElement = document.getElementById(id);
-        let listeningElement = parentElement.querySelector('.listening');
-        let receivedElement = parentElement.querySelector('.received');
+    receivedEvent: function receivedEvent(id) {
+        var parentElement = document.getElementById(id);
+        var listeningElement = parentElement.querySelector('.listening');
+        var receivedElement = parentElement.querySelector('.received');
 
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
@@ -334,15 +344,13 @@ let app = {
         console.log('Received Event: ' + id);
     },
 
-    getTimeStamp: function() {
+    getTimeStamp: function getTimeStamp() {
 
-        let date = new Date();
-
-        return date.getTime();
-
+        return Date.now();
     },
 
-    save: function() {
+    save: function save() {
+
         $.mobile.loading('show', {
             text: 'Saving',
             theme: 'z',
@@ -350,22 +358,30 @@ let app = {
         });
         $.ajax({
             type: "POST",
-            url: "http://ec2-54-173-205-147.compute-1.amazonaws.com/busara/busara.php",
+            url: "http://34.211.227.26/busara.php",
             data: {
-                analytics: app.dataStore,
-                application: 'deepnested',
-                user: "40004" + app.surveyId
+                analytics: app.dataStore.slice(0, app.dataStore.length - 1),
+                application: 'nigeria_project',
+                user: app.surveyId
             },
             dataType: "text",
-            error: function() {
+            error: function error() {
                 //$('.ui-loader').hide();
                 $.mobile.loading('hide');
                 //TODO logic  to resend request
+                window.alert("An error has occured. Please check your internet connection and try again");
             },
-            success: function(data) {
+            success: function success(data) {
                 //$('.ui-loader').hide();
                 $.mobile.loading('hide');
-
+                if (data) {
+                    window.alert("An error has occurred. Please try again");
+                    console.error(data);
+                }
+                else {
+                    app.dataStore.splice(0, app.dataStore.length - 1);
+                    window.alert("Saved successfully");
+                }
             }
         });
     }

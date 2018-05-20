@@ -91,22 +91,16 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function onDeviceReady() {
 
-        if (app.surveyId == null) {
-            $.mobile.changePage("survey_id.html", {
-                role: "dialog"
-            });
+        if (app.surveyId === null) {
+            setTimeout(function() { $.mobile.changePage('login.html'); }, 100);
         }
 
-        $(document).on('pageinit', 'div:jqmData(role="page")', function (event) {
-
-            if (app.surveyId == null) {
-                $.mobile.changePage("login.html");
-            }
-        });
-
-        $(document).on('pagebeforeshow', '#login', function (e) {
-            app.surveyId = 123;
-        });
+        // $(document).on('pageinit', 'div:jqmData(role="page")', function (event) {
+        //
+        //     if (app.surveyId == null) {
+        //         $.mobile.changePage("login.html");
+        //     }
+        // });
 
         $(document).on('click', '[data-role="goal_type_selection"]', function (e) {
 
@@ -205,6 +199,21 @@ var app = {
             $("#gs-group").html(group.capitalize());
         });
 
+        $(document).on('click', '#login-button', function(e) {
+            e.preventDefault();
+            var phoneNumber = $("#phone_number").val();
+            if (!phoneNumber || !/\d+/.test(phoneNumber)) {
+                window.alert("Invalid Phone Number. Please try again");
+                return;
+            }
+            app.surveyId = phoneNumber;
+            $.mobile.changePage('homepage.html');
+        });
+
+        $(document).on('click', '[data-role=btn-upload-data]', function () {
+            app.save();
+        });
+
         app.appStartTimeStamp = app.getTimeStamp();
         app.currentPageTimestamp = app.appStartTimeStamp;
 
@@ -217,7 +226,12 @@ var app = {
             var pageAnalytics = {};
 
             pageAnalytics.timeStamp = app.getTimeStamp();
-            pageAnalytics.timeSpent = app.timeTracker(Date.now());
+            pageAnalytics.timeSpent = 0; //app.timeTracker(Date.now());
+
+            if (app.dataStore.length > 0) {
+                app.dataStore[app.dataStore.length - 1].timeSpent = app.timeTracker(Date.now());
+
+            }
 
             var absUrl = data.absUrl;
             var thePreviousPage = app.prevPage;
@@ -256,7 +270,9 @@ var app = {
                 var inputStream = "";
 
                 inputTxt.change(function (e) {
-                    finalInputValue = inputTxt.val();
+                    var name = inputTxt.attr("name");
+                    var type = inputTxt.attr('type');
+                    finalInputValue = type === 'radio' ? $(`input[name=${name}]:checked`).val() : inputTxt.val();
                     finalInputLength = inputTxt.val().length;
                     timeStopTyping = app.getTimeStamp();
                     timeSpentInField = moment.duration(moment(timeStopTyping).diff(moment(timeStartTyping)))._milliseconds;
@@ -270,7 +286,8 @@ var app = {
                         finalInputValue: finalInputValue,
                         finalInputLength: finalInputLength,
                         intelliWordChanges: intelliWordChanges.toString(),
-                        intelliWordIndex: intelliWordIndex
+                        intelliWordIndex: intelliWordIndex,
+                        name: inputTxt.attr("name")
 
                     };
                     pageAnalytics.inputStats = inputStatistics;
@@ -289,7 +306,7 @@ var app = {
                             inputStream = "";
                         }
                     }
-                    if (inputTxt.val().length === 1) {
+                    if (inputTxt.val().length === 1 && timeStartTyping !== 0) {
                         timeStartTyping = app.getTimeStamp();
                     }
                 }).focus(function (e) {
@@ -329,12 +346,11 @@ var app = {
 
     getTimeStamp: function getTimeStamp() {
 
-        var date = new Date();
-
-        return date.getTime();
+        return Date.now();
     },
 
     save: function save() {
+
         $.mobile.loading('show', {
             text: 'Saving',
             theme: 'z',
@@ -342,21 +358,30 @@ var app = {
         });
         $.ajax({
             type: "POST",
-            url: "http://ec2-54-173-205-147.compute-1.amazonaws.com/busara/busara.php",
+            url: "http://34.211.227.26/busara.php",
             data: {
-                analytics: app.dataStore,
-                application: 'deepnested',
-                user: "40004" + app.surveyId
+                analytics: app.dataStore.slice(0, app.dataStore.length - 1),
+                application: 'nigeria_project',
+                user: app.surveyId
             },
             dataType: "text",
             error: function error() {
                 //$('.ui-loader').hide();
                 $.mobile.loading('hide');
                 //TODO logic  to resend request
+                window.alert("An error has occured. Please check your internet connection and try again");
             },
             success: function success(data) {
                 //$('.ui-loader').hide();
                 $.mobile.loading('hide');
+                if (data) {
+                    window.alert("An error has occurred. Please try again");
+                    console.error(data);
+                }
+                else {
+                    app.dataStore.splice(0, app.dataStore.length - 1);
+                    window.alert("Saved successfully");
+                }
             }
         });
     }

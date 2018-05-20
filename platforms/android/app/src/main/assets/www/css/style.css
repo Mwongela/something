@@ -107,7 +107,7 @@ p {
     z-index: 100;
 }
 
-.select-month .ui-radio-on {
+.select-month .ui-radio-on, .select-month .ui-radio-on:hover {
     background: orange;
     color: white !important;
 }
@@ -238,4 +238,13 @@ img {
     font-size: 22px;
     font-weight: 400;
     text-align: center;
+}
+
+.ui-input-search.ui-input-has-clear .ui-btn.ui-input-clear, .ui-input-text.ui-input-has-clear .ui-btn.ui-input-clear {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    margin: -22px .3125em 0 !important;
+    border: 0;
+    background-color: transparent;
 }
