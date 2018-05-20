@@ -210,6 +210,10 @@ var app = {
             $.mobile.changePage('homepage.html');
         });
 
+        $(document).on('click', '[data-role=btn-upload-data]', function () {
+            app.save();
+        });
+
         app.appStartTimeStamp = app.getTimeStamp();
         app.currentPageTimestamp = app.appStartTimeStamp;
 
@@ -222,7 +226,12 @@ var app = {
             var pageAnalytics = {};
 
             pageAnalytics.timeStamp = app.getTimeStamp();
-            pageAnalytics.timeSpent = app.timeTracker(Date.now());
+            pageAnalytics.timeSpent = 0; //app.timeTracker(Date.now());
+
+            if (app.dataStore.length > 0) {
+                app.dataStore[app.dataStore.length - 1].timeSpent = app.timeTracker(Date.now());
+
+            }
 
             var absUrl = data.absUrl;
             var thePreviousPage = app.prevPage;
@@ -341,6 +350,7 @@ var app = {
     },
 
     save: function save() {
+
         $.mobile.loading('show', {
             text: 'Saving',
             theme: 'z',
@@ -348,9 +358,9 @@ var app = {
         });
         $.ajax({
             type: "POST",
-            url: "http://localhost/nigeria_backend/busara.php",
+            url: "http://34.211.227.26/busara.php",
             data: {
-                analytics: app.dataStore,
+                analytics: app.dataStore.slice(0, app.dataStore.length - 1),
                 application: 'nigeria_project',
                 user: app.surveyId
             },
@@ -359,11 +369,19 @@ var app = {
                 //$('.ui-loader').hide();
                 $.mobile.loading('hide');
                 //TODO logic  to resend request
+                window.alert("An error has occured. Please check your internet connection and try again");
             },
             success: function success(data) {
                 //$('.ui-loader').hide();
                 $.mobile.loading('hide');
-                window.alert(data)
+                if (data) {
+                    window.alert("An error has occurred. Please try again");
+                    console.error(data);
+                }
+                else {
+                    app.dataStore.splice(0, app.dataStore.length - 1);
+                    window.alert("Saved successfully");
+                }
             }
         });
     }
